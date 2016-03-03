@@ -1,5 +1,5 @@
 (ns nines.core
-  (:require ))
+  (:require [nines.game :as game]))
 
 (enable-console-print!)
 
@@ -7,7 +7,7 @@
 
 ;; define your app data so that it doesn't get over-written on reload
 
-(defonce app-state (atom {:text "Hello world!"}))
+(defonce app-state (atom {}))
 
 
 (defn on-js-reload []
