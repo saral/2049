@@ -1,7 +1,9 @@
 (ns nines.game
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [nines.drawing :as drawing]
             [nines.util :as util]
-            [monet.core :as mnt-core]))
+            [monet.core :as mnt-core]
+            [cljs.core.async :refer [<! >! timeout chan]]))
 
 (enable-console-print!)
 
@@ -36,4 +38,16 @@
 (loop! 0 (setup! 4 4))
 
 
-(drawing/start-engine "game" (setup! 4 4))
+
+
+(def denBoard (setup! 4 4))
+
+(def ch (drawing/start-engine "game" denBoard))
+
+(go (>! ch {:key :tile-appearance
+            :tile (new-tile (util/next-id! :tile) 12 0 3)}))
+
+ (go (>! ch {:key     :tile-slide
+             :tile-id (:id (second (vals (:tiles denBoard))))
+             :slide   {:start-time (js/Date.now)
+                       :target-pos {:x 2 :y 0}}}))
