@@ -77,7 +77,7 @@
         width  (* cell-size (-> board :dimensions :width))
         height (* cell-size (-> board :dimensions :height))
         rect {:x 0 :y 0 :w width :h height}]
-    (println rect)
+
     (-> ctx
       (cvs/fill-style (settings :board-bg-color))
       (cvs/fill-rect  rect))))
@@ -114,22 +114,18 @@
 ;; event-handlers
 ;; event-handlers
 
-(defn- handle-tile-appearance [event canvas]
-  (let [tile (:tile event)]
-    (cvs/add-entity canvas (:id tile) (new-tile-entity tile))))
+(defn- handle-tile-appearance [{:keys [tile]} canvas]
+    (cvs/add-entity canvas (:id tile) (new-tile-entity tile)))
 
-(defn- handle-tile-slide [event canvas]
-  (let [tile-id     (:tile-id event)
-        slide       (:slide event)]
-
+(defn- handle-tile-slide [{:keys [tile-id slide]} canvas]
     (cvs/update-entity canvas
                        tile-id
-                       assoc-in [:value :slide] slide)))
+                       assoc-in [:value :slide] slide))
 
-(defn- handle-event [event canvas]
+(defn- handle-event [{:keys [key] :as event} canvas]
   (let [handlers {:tile-slide      handle-tile-slide
                   :tile-appearance handle-tile-appearance}
-        handler  ((:key event) handlers)]
+        handler  (key              handlers)]
 
     (handler event canvas)))
 
@@ -138,7 +134,7 @@
 ;; engine
 ;; engine
 
-(defn- draw-engine [ch canvas]
+(defn- draw-engine! [ch canvas]
   (go-loop []
            (let [event (<! ch)]
              (handle-event event canvas))
@@ -147,5 +143,5 @@
 (defn start-engine [canvas-id board]
   (let [ch     (chan 10)
         canvas (setup canvas-id board)]
-    (draw-engine ch canvas)
+    (draw-engine! ch canvas)
     ch))
