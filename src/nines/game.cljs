@@ -36,10 +36,10 @@
              (let [[type event] (<! gameCh)
                    events       (generate-events model type event)
                    new-model    (apply-events model events)]
-               (drawCh <! events)
+               (doseq [event events] (>! drawCh event))
                (recur new-model)))))
 
-
+(start "game" 4 4)
 
 ;(def denBoard (:board (setup! 4 4)))
 ;(def ch (drawing/start-engine "game" denBoard))

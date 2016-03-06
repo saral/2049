@@ -3,7 +3,8 @@
             [nines.logic :refer      [generate-move-events
                                       is-in-direction-from-position
                                       is-before-col-according-to-direction
-                                      is-not-on-same-row-according-to-direction]]
+                                      is-not-on-same-row-according-to-direction
+                                      tiles-in-direction-from-position]]
             [nines.util :refer       [next-id!]]
             [nines.entities :refer   [add-tile new-tile new-board new-tile-appearance-event new-tile-slide-event]]
             [nines.drawing :as draw]
@@ -11,12 +12,21 @@
 
 (enable-console-print!)
 
+(def empty-board (new-board 4 4))
+
 (def tiles-at-left-board
   (-> (new-board 4 4)
       (add-tile (new-tile :testId1 30 0 0))))
 
-(def empty-board (new-board 4 4))
+(def board1
+  (-> (new-board 4 4)
+      (add-tile (new-tile :testId1 30 0 3))
+      (add-tile (new-tile :testId2 31 1 2))
+      (add-tile (new-tile :testId3 32 1 3))
+      ))
 
+(defn tile-with-id [id board]
+  (first (filter #(= id (:id %)) (vals (:tiles board)))))
 
 ; generate-move-events
 ; generate-move-events
@@ -34,6 +44,24 @@
        (generate-move-events {:board tiles-at-left-board} :right))))
 
 
+; ---
+; ---
+; tiles-in-dir
+
+(deftest tiles-in-direction-from-position--success
+  (is (=
+       [(tile-with-id :testId1 tiles-at-left-board)]
+       (tiles-in-direction-from-position (vals (:tiles tiles-at-left-board)) :left {:x 3 :y 0}))))
+
+(deftest tiles-in-direction-from-position--success-down-empty
+  (is (=
+       []
+       (tiles-in-direction-from-position (vals (:tiles tiles-at-left-board)) :down {:x 2 :y 0}))))
+
+(deftest tiles-in-direction-from-position--success-down
+  (is (=
+       [(tile-with-id :testId2 board1) (tile-with-id :testId3 board1)]
+       (tiles-in-direction-from-position (vals (:tiles board1)) :down {:x 1 :y 0}))))
 
 
 ; ---
@@ -115,6 +143,6 @@
 ; tests
 ; tests
 
-(draw/setup "game" tiles-at-left-board)
+; (draw/setup "game" tiles-at-left-board)
 
-(run-tests)
+; (run-tests)
