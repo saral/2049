@@ -46,6 +46,6 @@
 ;(go (>! ch (new-tile-appearance-event
 ;              (new-tile (next-id! :tile) 12 0 3))))
 ;(go (>! ch (new-tile-slide-event
-;              (second (vals (:tiles denBoard)))
+;              (:id (second (vals (:tiles denBoard))))
 ;              {:x 2 :y 0})))
 

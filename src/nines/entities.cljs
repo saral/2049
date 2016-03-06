@@ -25,8 +25,8 @@
   {:key     :tile-appearance
             :tile tile})
 
-(defn new-tile-slide-event [tile target-pos]
+(defn new-tile-slide-event [tile-id target-pos]
   {:key     :tile-slide
-            :tile-id (:id tile)
+            :tile-id tile-id
             :slide   {:start-time (js/Date.now)
                       :target-pos target-pos}})
