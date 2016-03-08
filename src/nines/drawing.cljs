@@ -117,10 +117,17 @@
 (defn- handle-tile-appearance [{:keys [tile]} canvas]
     (cvs/add-entity canvas (:id tile) (new-tile-entity tile)))
 
+(defn- put-slide [slide value]
+  (if (nil? (:slide value))
+    (assoc-in value [:slide] slide)
+    (-> value
+        (assoc-in [:tile :pos] (:target-pos (:slide value)))
+        (assoc-in [:slide] slide))))
+
 (defn- handle-tile-slide [{:keys [tile-id slide]} canvas]
     (cvs/update-entity canvas
                        tile-id
-                       assoc-in [:value :slide] slide))
+                       update-in [:value] (partial put-slide slide)))
 
 (defn- handle-event [{:keys [key] :as event} canvas]
   (let [handlers {:tile-slide      handle-tile-slide

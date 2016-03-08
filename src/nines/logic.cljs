@@ -70,7 +70,7 @@
         row         (row-key reference-pos)
         col         (col-key reference-pos)]
   {row-key row
-   col-key ((if (= dir-fn <) + -) 1 col)}))
+   col-key ((if (= dir-fn <) + -) col 1)}))
 
 (defn last-tile-position-in-direction [tile-positions direction reference-pos]
   (let [orientation (direction orientation)
@@ -107,7 +107,7 @@
 (defn calculate-tile-positions [tiles direction current-tile-positions dimensions]
   (reduce (partial calculate-tile-position tiles direction dimensions) current-tile-positions tiles))
 
-(defn generate-move-events [{:keys [board]} direction]
+(defn generate-move-events [{:keys [board] :as model} direction]
   (let [tiles          (vals (:tiles board))
         tile-positions (calculate-tile-positions tiles direction {} (:dimensions board))]
     (map #(new-tile-slide-event (first %) (:new-pos (second %))) tile-positions)))

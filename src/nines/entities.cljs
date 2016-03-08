@@ -14,8 +14,12 @@
    })
 
 (defn add-tile [board tile]
-  (update-in board [:tiles] assoc (tile :pos) tile))
+  (update-in board [:tiles] assoc (:id tile) tile))
 
+
+(defn new-model [board]
+  {:board board
+   :status :idle})
 
 ; events
 ; events

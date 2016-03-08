@@ -1,6 +1,6 @@
 (ns nines.game
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [nines.entities :refer [new-board new-tile add-tile new-tile-appearance-event new-tile-slide-event]]
+  (:require [nines.entities :refer [new-model new-board new-tile add-tile new-tile-appearance-event new-tile-slide-event]]
             [nines.util     :refer [next-id!]]
             [nines.drawing  :as    drawing]
             [nines.input    :as    input]
@@ -12,10 +12,10 @@
 
 (defn- setup! [width height]
   (let [board   (-> (new-board width height)
-                  (add-tile (new-tile (next-id! :tile) 7 2 2))
+                  (add-tile (new-tile (next-id! :tile) 8 2 2))
                   (add-tile (new-tile (next-id! :tile) 8 0 1)))
         ]
-    {:board board}))
+    (new-model board)))
 
 (defn- generate-events [model type event]
   (case type
@@ -24,8 +24,20 @@
     (throw (js/Error. (str "Unrecognized game command: " type)))
   ))
 
+(defn- apply-tile-slide [model event]
+  (let [tile-id    (:tile-id event)
+        slide      (:slide event)
+        target-pos (:target-pos slide)]
+    (println target-pos)
+    (assoc-in model [:board :tiles tile-id :pos] target-pos)))
+
+(defn- apply-event [model event]
+  (case (:key event)
+    :tile-slide (apply-tile-slide model event)
+    model))
+
 (defn- apply-events [model events]
-  model)
+  (reduce apply-event model events))
 
 (defn- start [canvas-id width height]
   (let [model  (setup! width height)
