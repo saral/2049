@@ -92,5 +92,5 @@
   [game-commands]
   (let [keys-pressed (keys-down-chan)
         commands (merge [(map< key-down->command keys-pressed)
-                                 (touch-commands)])]
+                         (touch-commands)])]
     (pipe commands game-commands)))

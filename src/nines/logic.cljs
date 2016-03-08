@@ -1,16 +1,43 @@
 (ns nines.logic
   (:require [nines.util :as util]
-            [nines.entities :refer [new-tile-appearance-event new-tile-slide-event]]
+            [nines.entities :refer [new-tile new-tile-appearance-event new-tile-slide-event]]
             ))
 (enable-console-print!)
 
-
 ; generate-new-tile-event
 ; generate-new-tile-event
 ; generate-new-tile-event
 
-(defn generate-new-tile-event [model event]
-  (new-tile-appearance-event event))
+(defn- is-full [board]
+  (let [dimensions (:dimensions board)
+        width      (:width dimensions)
+        height     (:height dimensions)
+        cell-count (* width height)
+        pos-count  (count (keys (:tiles board)))]
+    (>= pos-count cell-count)))
+
+(defn- tile-at-position [{:keys [tiles]} pos]
+  (first
+   (filterv #(= pos (:pos %))
+            (vals tiles))))
+
+(defn- random-free-position [board]
+  (let [dimensions (:dimensions board)
+        width      (:width dimensions)
+        height     (:height dimensions)
+        rand-x     (js/parseInt (* width (js/Math.random)))
+        rand-y     (js/parseInt (* height (js/Math.random)))
+        rand-pos   {:x rand-x :y rand-y}]
+    (if (nil? (tile-at-position board rand-pos))
+      rand-pos
+      (random-free-position board))))
+
+(defn generate-new-tile-events [{:keys [board]} event]
+  (if (not (is-full board))
+    (let [pos     (random-free-position board)
+          content (+ 5 (js/parseInt (* 5 (js/Math.random))))
+          tile    (new-tile (util/next-id! :tile) content (:x pos) (:y pos))]
+      [(new-tile-appearance-event tile)])))
 
 
 ; generate-move-events

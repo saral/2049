@@ -133,7 +133,6 @@
   (let [handlers {:tile-slide      handle-tile-slide
                   :tile-appearance handle-tile-appearance}
         handler  (key              handlers)]
-
     (handler event canvas)))
 
 

@@ -7,7 +7,7 @@
             [nines.logic    :as    logic]
             [nines.tests]
             [monet.core :as mnt-core]
-            [cljs.core.async :refer [<! >! timeout chan]]))
+            [cljs.core.async :refer [<! >! timeout chan put!]]))
 (enable-console-print!)
 
 (defn- setup! [width height]
@@ -20,33 +20,41 @@
 (defn- generate-events [model type event]
   (case type
     :move     (logic/generate-move-events model event)
-    :new-tile (logic/generate-new-tile-event model event)
-    (throw (js/Error. (str "Unrecognized game command: " type)))
-  ))
+    :new-tile (logic/generate-new-tile-events model event)
+    (throw (js/Error. (str "Unrecognized game command: " type)))))
+
+(defn- apply-tile-appearance [model {:keys [tile]}]
+  (assoc-in model [:board :tiles (:id tile)] tile))
 
 (defn- apply-tile-slide [model event]
   (let [tile-id    (:tile-id event)
         slide      (:slide event)
         target-pos (:target-pos slide)]
-    (println target-pos)
     (assoc-in model [:board :tiles tile-id :pos] target-pos)))
 
 (defn- apply-event [model event]
   (case (:key event)
-    :tile-slide (apply-tile-slide model event)
+    :tile-slide      (apply-tile-slide model event)
+    :tile-appearance (apply-tile-appearance model event)
     model))
 
 (defn- apply-events [model events]
   (reduce apply-event model events))
 
+(defn- tile-creation-channel [chan]
+  (do
+    (put! chan [:new-tile {}])
+    (js/setTimeout #(tile-creation-channel chan) 2000)))
+
 (defn- start [canvas-id width height]
   (let [model  (setup! width height)
         drawCh (drawing/start-engine canvas-id (:board model))
-        gameCh (chan)]
+        gameCh (chan 10)]
+    (tile-creation-channel gameCh)
     (input/init-input! gameCh)
     (go-loop [model model]
-             (let [[type event] (<! gameCh)
-                   events       (generate-events model type event)
+             (let [[type action] (<! gameCh)
+                   events       (generate-events model type action)
                    new-model    (apply-events model events)]
                (doseq [event events] (>! drawCh event))
                (recur new-model)))))
