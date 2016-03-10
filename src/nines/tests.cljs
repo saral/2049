@@ -40,7 +40,7 @@
 
 (deftest events-for-sliding-tiles
   (is (=
-       [(new-tile-slide-event {:id :testId1} {:x 3 :y 0})]
+       [(new-tile-slide-event {:id :testId1} {:x 3 :y 0} nil)]
        (generate-move-events {:board tiles-at-left-board} :right))))
 
 

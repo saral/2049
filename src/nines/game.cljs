@@ -19,44 +19,76 @@
 
 (defn- generate-events [model type event]
   (case type
-    :move     (logic/generate-move-events model event)
-    :new-tile (logic/generate-new-tile-events model event)
+    :move      (logic/generate-move-events model event)
+    :new-tile  (logic/generate-new-tile-events model event)
+    :countdown (logic/generate-countdown-events model event)
     (throw (js/Error. (str "Unrecognized game command: " type)))))
+
+
+; ---
+; ---
+; apply-events
 
 (defn- apply-tile-appearance [model {:keys [tile]}]
   (assoc-in model [:board :tiles (:id tile)] tile))
 
 (defn- apply-tile-slide [model event]
-  (let [tile-id    (:tile-id event)
-        slide      (:slide event)
-        target-pos (:target-pos slide)]
-    (assoc-in model [:board :tiles tile-id :pos] target-pos)))
+  (let [tile-id      (:tile-id event)
+        slide        (:slide event)
+        target-pos   (:target-pos slide)
+        merging-with (:merging-with slide)]
+    (if (nil? merging-with)
+      (assoc-in model [:board :tiles tile-id :pos] target-pos)
+      (-> model
+          (assoc-in  [:board :tiles (:id merging-with) :counting?] true)
+          (update-in [:board :tiles] dissoc tile-id)))))
+
+(defn- apply-tile-countdown [model {:keys [tile-id new-content]}]
+  (assoc-in model [:board :tiles tile-id :content] new-content))
 
 (defn- apply-event [model event]
   (case (:key event)
     :tile-slide      (apply-tile-slide model event)
     :tile-appearance (apply-tile-appearance model event)
+    :tile-countdown  (apply-tile-countdown model event)
     model))
 
 (defn- apply-events [model events]
   (reduce apply-event model events))
 
-(defn- tile-creation-channel [chan]
+
+; ---
+; ---
+; channels
+
+(defn- tile-creation-channel! [chan]
   (do
     (put! chan [:new-tile {}])
-    (js/setTimeout #(tile-creation-channel chan) 2000)))
+   ; (js/setTimeout #(tile-creation-channel! chan) 1000)
+    ))
+
+(defn- countdown-channel! [chan]
+  (do
+    (put! chan [:countdown {}])
+    (js/setTimeout #(countdown-channel! chan) 1000)
+    ))
 
 (defn- start [canvas-id width height]
   (let [model  (setup! width height)
         drawCh (drawing/start-engine canvas-id (:board model))
         gameCh (chan 10)]
-    (tile-creation-channel gameCh)
-    (input/init-input! gameCh)
+    (tile-creation-channel! gameCh)
+    (input/init-input!      gameCh)
+    (countdown-channel!     gameCh)
     (go-loop [model model]
              (let [[type action] (<! gameCh)
                    events       (generate-events model type action)
                    new-model    (apply-events model events)]
+               (println "EVEN: " events)
+  ;             (println "ESKI: " model)
+               (println "YENI: " new-model)
                (doseq [event events] (>! drawCh event))
+               ;(drawing/setup "game" (:board new-model))
                (recur new-model)))))
 
 (start "game" 4 4)

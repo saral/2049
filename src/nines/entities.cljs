@@ -11,6 +11,7 @@
   {:id id
    :content content
    :pos {:x x :y y}
+   :counting? false
    })
 
 (defn add-tile [board tile]
@@ -27,10 +28,16 @@
 
 (defn new-tile-appearance-event [tile]
   {:key     :tile-appearance
-            :tile tile})
+   :tile tile})
 
-(defn new-tile-slide-event [tile-id target-pos]
+(defn new-tile-slide-event [tile-id target-pos merging-with]
   {:key     :tile-slide
-            :tile-id tile-id
-            :slide   {:start-time (js/Date.now)
-                      :target-pos target-pos}})
+   :tile-id tile-id
+   :slide   {:start-time   (js/Date.now)
+             :target-pos   target-pos
+             :merging-with merging-with}})
+
+(defn new-countdown-event [tile-id new-content]
+  {:key          :tile-countdown
+   :tile-id   tile-id
+   :new-content  new-content})

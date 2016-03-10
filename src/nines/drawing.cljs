@@ -129,9 +129,15 @@
                        tile-id
                        update-in [:value] (partial put-slide slide)))
 
+(defn- handle-tile-countdown [{:keys [tile-id new-content]} canvas]
+    (cvs/update-entity canvas
+                       tile-id
+                       assoc-in [:value :tile :content] new-content))
+
 (defn- handle-event [{:keys [key] :as event} canvas]
   (let [handlers {:tile-slide      handle-tile-slide
-                  :tile-appearance handle-tile-appearance}
+                  :tile-appearance handle-tile-appearance
+                  :tile-countdown  handle-tile-countdown}
         handler  (key              handlers)]
     (handler event canvas)))
 

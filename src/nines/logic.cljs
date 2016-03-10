@@ -1,6 +1,6 @@
 (ns nines.logic
   (:require [nines.util :as util]
-            [nines.entities :refer [new-tile new-tile-appearance-event new-tile-slide-event]]
+            [nines.entities :refer [new-tile new-tile-appearance-event new-tile-slide-event new-countdown-event]]
             ))
 (enable-console-print!)
 
@@ -38,6 +38,19 @@
           content (+ 5 (js/parseInt (* 5 (js/Math.random))))
           tile    (new-tile (util/next-id! :tile) content (:x pos) (:y pos))]
       [(new-tile-appearance-event tile)])))
+
+
+; ---
+; ---
+; generate-countdown-events
+
+(defn new-content [tile]
+  (dec (:content tile)))
+
+(defn generate-countdown-events [model event]
+  (let [tiles           (vals (:tiles (:board model)))
+        tiles-to-count  (filterv #(:counting? %) tiles)]
+    (map #(new-countdown-event (:id %) (new-content %)) tiles-to-count)))
 
 
 ; generate-move-events
@@ -99,14 +112,24 @@
   {row-key row
    col-key ((if (= dir-fn <) + -) col 1)}))
 
+(defn non-merging-tile-at-pos [tile-positions pos]
+  (first
+   (filterv #(and
+              (= pos (:new-pos %))
+              (nil?  (:merging-with %)))
+            tile-positions)))
+
 (defn last-tile-position-in-direction [tile-positions direction reference-pos]
   (let [orientation (direction orientation)
         row-key     (:row orientation)
         col-key     (:col orientation)
         dir-fn      (:dir-fn orientation)
         comp-fn     #(dir-fn (col-key %1) (col-key %2))
-        positions-in-dir (positions-in-direction-from-position (vals tile-positions) direction reference-pos)]
-    (last (sort-by :new-pos comp-fn positions-in-dir))))
+        positions-in-dir (positions-in-direction-from-position (vals tile-positions) direction reference-pos)
+        last-tile-pos    (last (sort-by :new-pos comp-fn positions-in-dir))]
+    (if (nil? last-tile-pos)
+      nil
+      (non-merging-tile-at-pos positions-in-dir (:new-pos last-tile-pos)))))
 
 (declare calculate-tile-positions)
 
@@ -125,7 +148,8 @@
           (assoc new-tile-positions
             (:id tile)
             {:tile tile
-             :new-pos (:new-pos last-tile-pos-in-dir)})
+             :new-pos      (:new-pos last-tile-pos-in-dir)
+             :merging-with (:tile    last-tile-pos-in-dir)})
           (assoc new-tile-positions
             (:id tile)
             {:tile tile
@@ -137,5 +161,9 @@
 (defn generate-move-events [{:keys [board] :as model} direction]
   (let [tiles          (vals (:tiles board))
         tile-positions (calculate-tile-positions tiles direction {} (:dimensions board))]
-    (map #(new-tile-slide-event (first %) (:new-pos (second %))) tile-positions)))
+    (map #(new-tile-slide-event
+           (first %)
+           (:new-pos      (second %))
+           (:merging-with (second %)))
+         tile-positions)))
 
