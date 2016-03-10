@@ -12,7 +12,7 @@
                :tile-text-color "#ffffff"
                :tile-text-ratio 0.6
                :cell-size       80
-               :slide-duration  1300
+               :slide-duration  600
                :slide-tween     (partial tween/ease-out tween/transition-pow)})
 
 (defn- new-canvas [canvas-id]
@@ -128,9 +128,14 @@
         (assoc-in [:slide] slide))))
 
 (defn- handle-tile-slide [{:keys [tile-id slide]} canvas]
+  (do
     (cvs/update-entity canvas
                        tile-id
-                       update-in [:value] (partial put-slide slide)))
+                       update-in [:value] (partial put-slide slide))
+    (if (:merging-with slide)
+      (js/setTimeout
+       #(cvs/remove-entity canvas tile-id)
+       (:slide-duration settings)))))
 
 (defn- handle-tile-countdown [{:keys [tile-id new-content]} canvas]
     (cvs/update-entity canvas

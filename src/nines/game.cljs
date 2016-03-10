@@ -68,7 +68,7 @@
 (defn- tile-creation-channel! [chan]
   (do
     (put! chan [:new-tile {}])
-   ; (js/setTimeout #(tile-creation-channel! chan) 1000)
+    (js/setTimeout #(tile-creation-channel! chan) 2000)
     ))
 
 (defn- countdown-channel! [chan]
@@ -88,9 +88,9 @@
              (let [[type action] (<! gameCh)
                    events       (generate-events model type action)
                    new-model    (apply-events model events)]
-               (println "EVEN: " events)
+           ;    (println "EVEN: " events)
   ;             (println "ESKI: " model)
-               (println "YENI: " new-model)
+            ;   (println "YENI: " new-model)
                (doseq [event events] (>! drawCh event))
                ;(drawing/setup "game" (:board new-model))
                (recur new-model)))))

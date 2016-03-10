@@ -35,7 +35,7 @@
 (defn generate-new-tile-events [{:keys [board]} event]
   (if (not (is-full board))
     (let [pos     (random-free-position board)
-          content (+ 5 (js/parseInt (* 5 (js/Math.random))))
+          content (+ 8 (js/parseInt (* 7 (js/Math.random))))
           tile    (new-tile (util/next-id! :tile) content (:x pos) (:y pos))]
       [(new-tile-appearance-event tile)])))
 
@@ -48,7 +48,7 @@
   (dec (:content tile)))
 
 (defn new-countdown-events [tile new-content]
-  (if (<= new-content 0)
+  (if (< new-content 0)
     (new-tile-disappearance-event tile)
     (new-countdown-event (:id tile) new-content)))
 
