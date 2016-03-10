@@ -32,6 +32,9 @@
 (defn- apply-tile-appearance [model {:keys [tile]}]
   (assoc-in model [:board :tiles (:id tile)] tile))
 
+(defn- apply-tile-disappearance [model {:keys [tile]}]
+  (update-in model [:board :tiles] dissoc (:id tile)))
+
 (defn- apply-tile-slide [model event]
   (let [tile-id      (:tile-id event)
         slide        (:slide event)
@@ -50,6 +53,7 @@
   (case (:key event)
     :tile-slide      (apply-tile-slide model event)
     :tile-appearance (apply-tile-appearance model event)
+    :tile-disappearance (apply-tile-disappearance model event)
     :tile-countdown  (apply-tile-countdown model event)
     model))
 

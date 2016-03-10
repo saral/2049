@@ -117,6 +117,9 @@
 (defn- handle-tile-appearance [{:keys [tile]} canvas]
     (cvs/add-entity canvas (:id tile) (new-tile-entity tile)))
 
+(defn- handle-tile-disappearance [{:keys [tile]} canvas]
+    (cvs/remove-entity canvas (:id tile)))
+
 (defn- put-slide [slide value]
   (if (nil? (:slide value))
     (assoc-in value [:slide] slide)
@@ -137,7 +140,8 @@
 (defn- handle-event [{:keys [key] :as event} canvas]
   (let [handlers {:tile-slide      handle-tile-slide
                   :tile-appearance handle-tile-appearance
-                  :tile-countdown  handle-tile-countdown}
+                  :tile-countdown  handle-tile-countdown
+                  :tile-disappearance handle-tile-disappearance}
         handler  (key              handlers)]
     (handler event canvas)))
 

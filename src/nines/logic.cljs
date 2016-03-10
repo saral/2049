@@ -1,6 +1,6 @@
 (ns nines.logic
   (:require [nines.util :as util]
-            [nines.entities :refer [new-tile new-tile-appearance-event new-tile-slide-event new-countdown-event]]
+            [nines.entities :refer [new-tile new-tile-disappearance-event new-tile-appearance-event new-tile-slide-event new-countdown-event]]
             ))
 (enable-console-print!)
 
@@ -47,10 +47,15 @@
 (defn new-content [tile]
   (dec (:content tile)))
 
+(defn new-countdown-events [tile new-content]
+  (if (<= new-content 0)
+    (new-tile-disappearance-event tile)
+    (new-countdown-event (:id tile) new-content)))
+
 (defn generate-countdown-events [model event]
   (let [tiles           (vals (:tiles (:board model)))
         tiles-to-count  (filterv #(:counting? %) tiles)]
-    (map #(new-countdown-event (:id %) (new-content %)) tiles-to-count)))
+    (map #(new-countdown-events % (new-content %)) tiles-to-count)))
 
 
 ; generate-move-events

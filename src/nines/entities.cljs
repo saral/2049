@@ -30,6 +30,10 @@
   {:key     :tile-appearance
    :tile tile})
 
+(defn new-tile-disappearance-event [tile]
+  {:key  :tile-disappearance
+   :tile tile})
+
 (defn new-tile-slide-event [tile-id target-pos merging-with]
   {:key     :tile-slide
    :tile-id tile-id
@@ -38,6 +42,6 @@
              :merging-with merging-with}})
 
 (defn new-countdown-event [tile-id new-content]
-  {:key          :tile-countdown
-   :tile-id   tile-id
-   :new-content  new-content})
+  {:key         :tile-countdown
+   :tile-id     tile-id
+   :new-content new-content})
