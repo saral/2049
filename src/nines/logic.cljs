@@ -4,6 +4,10 @@
             ))
 (enable-console-print!)
 
+(def logic-settings
+  {:min-content 8
+   :max-content 18})
+
 ; generate-new-tile-event
 ; generate-new-tile-event
 ; generate-new-tile-event
@@ -32,11 +36,17 @@
       rand-pos
       (random-free-position board))))
 
+(defn random-content []
+  (let [max-content (:max-content logic-settings)
+        min-content (:min-content logic-settings)
+        range       (- max-content min-content)]
+    (+ min-content (js/parseInt (* range (js/Math.random))))))
+
 (defn generate-new-tile-events [{:keys [board]} event]
   (if (not (is-full board))
-    (let [pos     (random-free-position board)
-          content (+ 8 (js/parseInt (* 7 (js/Math.random))))
-          tile    (new-tile (util/next-id! :tile) content (:x pos) (:y pos))]
+    (let [pos           (random-free-position board)
+          content       (random-content)
+          tile          (new-tile (util/next-id! :tile) content (:x pos) (:y pos))]
       [(new-tile-appearance-event tile)])))
 
 

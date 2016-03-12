@@ -68,7 +68,7 @@
 (defn- tile-creation-channel! [chan]
   (do
     (put! chan [:new-tile {}])
-    (js/setTimeout #(tile-creation-channel! chan) 2000)
+    (js/setTimeout #(tile-creation-channel! chan) 3000)
     ))
 
 (defn- countdown-channel! [chan]

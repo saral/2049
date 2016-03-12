@@ -7,13 +7,14 @@
 
 (enable-console-print!)
 
-(def settings {:board-bg-color  "#666666"
-               :tile-bg-color   "#191d21"
-               :tile-text-color "#ffffff"
-               :tile-text-ratio 0.6
-               :cell-size       80
-               :slide-duration  600
-               :slide-tween     (partial tween/ease-out tween/transition-pow)})
+(def settings {:board-bg-color      "#666666"
+               :tile-bg-color       "#191d21"
+               :tile-count-bg-color "#183442"
+               :tile-text-color     "#ffffff"
+               :tile-text-ratio     0.6
+               :cell-size           80
+               :slide-duration      600
+               :slide-tween         (partial tween/ease-out tween/transition-pow)})
 
 (defn- new-canvas [canvas-id]
   (let [canvas-dom (.getElementById js/document canvas-id)]
@@ -23,13 +24,15 @@
 ;; draw functions
 ;; draw functions
 
-(defn- draw-tile-at-rect [ctx tile rect]
-  (let [cell-size    (:cell-size settings)
+(defn- draw-tile-at-rect [ctx val rect]
+  (let [tile         (:tile val)
+        cell-size    (:cell-size settings)
+        bg-color     (if (:counting val) (:tile-count-bg-color settings) (:tile-bg-color settings))
         txt-px-pos-x (+ (:x rect) (/ cell-size 2))
         txt-px-pos-y (+ (:y rect) (/ cell-size 2))
         font         (str (* cell-size (:tile-text-ratio settings)) "px sans-serif")]
   (-> ctx
-        (cvs/fill-style (settings :tile-bg-color))
+        (cvs/fill-style bg-color)
         (cvs/fill-rect  rect)
         (cvs/fill-style (settings :tile-text-color))
         (cvs/font-style font)
@@ -70,7 +73,7 @@
                (tile-fixed-rect val)
                (tile-sliding-rect val))]
 
-    (draw-tile-at-rect ctx (:tile val) rect)))
+    (draw-tile-at-rect ctx val rect)))
 
 (defn- draw-board [ctx board]
   (let [cell-size (:cell-size settings)
@@ -140,7 +143,9 @@
 (defn- handle-tile-countdown [{:keys [tile-id new-content]} canvas]
     (cvs/update-entity canvas
                        tile-id
-                       assoc-in [:value :tile :content] new-content))
+                       #(-> %
+                            (assoc-in [:value :tile :content] new-content)
+                            (assoc-in [:value :counting] true))))
 
 (defn- handle-event [{:keys [key] :as event} canvas]
   (let [handlers {:tile-slide      handle-tile-slide
